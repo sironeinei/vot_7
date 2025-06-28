@@ -26,80 +26,95 @@ h2{margin-top:30px}
 <div id="screen-vote" class="hidden">
 <h2>１着は誰でしょう</h2>
 <p id="countdown" style="font-size:16px;font-weight:bold;color:#333;"></p>
-<p id="vote-warning" style="color:red;font-size:14px;margin-top:-10px;"></p>
 <div id="vote-buttons"></div></div>
 <script>
-const VOTE_START=new Date("2025-06-27T10:00:00"),VOTE_END=new Date("2025-07-22T20:20:00");
-const players=[{n:1,t:"佐藤(さとう) 　選手",c:"btn-white"},{n:2,t:"鈴木(すずき) 　選手",c:"btn-black"},{n:3,t:"高橋(たかはし) 選手",c:"btn-red"},{n:4,t:"田中(たなか) 　選手",c:"btn-blue"},{n:5,t:"伊藤(いとう) 　選手",c:"btn-yellow"},{n:6,t:"山本(やまもと) 選手",c:"btn-green"},{n:7,t:"斎藤(さいとう) 選手",c:"btn-orange"}];
+const VOTE_START=new Date("2025-06-27T10:00:00"),
+      VOTE_END=new Date("2025-06-28T19:50:00");
+const players=[
+  {n:1,t:"佐藤(さとう) 　選手",c:"btn-white"},
+  {n:2,t:"鈴木(すずき) 　選手",c:"btn-black"},
+  {n:3,t:"高橋(たかはし) 選手",c:"btn-red"},
+  {n:4,t:"田中(たなか) 　選手",c:"btn-blue"},
+  {n:5,t:"伊藤(いとう) 　選手",c:"btn-yellow"},
+  {n:6,t:"山本(やまもと) 選手",c:"btn-green"},
+  {n:7,t:"斎藤(さいとう) 選手",c:"btn-orange"}
+];
 function $(id){return document.getElementById(id)}
 function handleName(){
-let name=$("username").value.trim();if(!name)return alert("名前を入力してください");
-let now=new Date;if(now>VOTE_END)return;
-localStorage.setItem("username",name);showVoteScreen(name)
+  let name=$("username").value.trim();
+  if(!name)return alert("名前を入力してください");
+  if(new Date()>VOTE_END)return;
+  localStorage.setItem("username",name);
+  showVoteScreen(name)
 }
 function showVoteScreen(name){
-$("screen-name").classList.add("hidden");
-$("screen-vote").classList.remove("hidden");
-let c=$("vote-buttons");c.innerHTML="";
-players.forEach(p=>{
-let b=document.createElement("button");
-b.textContent=p.n+"："+p.t;b.className=p.c;
-b.onclick=()=>{if(new Date()>VOTE_END){returnToNameScreen(true);return}
-let d={name:name,number:p.n,playerName:p.t,time:new Date().toISOString()};
-localStorage.setItem("voteData",JSON.stringify(d));
-returnToNameScreen()}
-c.appendChild(b)});
-showCountdown();
+  $("screen-name").classList.add("hidden");
+  $("screen-vote").classList.remove("hidden");
+  let c=$("vote-buttons");c.innerHTML="";
+  players.forEach(p=>{
+    let b=document.createElement("button");
+    b.textContent=p.n+"："+p.t;
+    b.className=p.c;
+    b.onclick=()=>{
+      if(new Date()>VOTE_END){returnToNameScreen(true);return}
+      let d={name:name,number:p.n,playerName:p.t,time:new Date().toISOString()};
+      localStorage.setItem("voteData",JSON.stringify(d));
+      returnToNameScreen()
+    };
+    c.appendChild(b)
+  });
+  showCountdown()
 }
 function returnToNameScreen(ended){
-$("screen-vote").classList.add("hidden");
-$("screen-name").classList.remove("hidden");
-$("username").value="";
-if(ended){
-$("name-label").innerHTML="投票は終了しました！<br>ご投票ありがとうございます♪";
-$("username").style.display="none";
-$("vote-btn").style.display="none"
-}
-showLastVote()
+  $("screen-vote").classList.add("hidden");
+  $("screen-name").classList.remove("hidden");
+  $("username").value="";
+  if(ended){
+    $("name-label").innerHTML="投票は終了しました！<br>ご投票ありがとうございます♪";
+    $("username").style.display="none";
+    $("vote-btn").style.display="none"
+  }
+  showLastVote()
 }
 function showLastVote(){
-let d=JSON.parse(localStorage.getItem("voteData"));if(!d)return;
-let p=players.find(x=>x.n===d.number),cls=p?.c||"",col=(cls==="btn-white"||cls==="btn-yellow")?"black":"white";
-let num=`<span class="${cls}" style="color:${col};padding:4px 12px;border-radius:6px;display:inline-block">${d.number}</span>`;
-let time="投票時刻　"+new Date(d.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
-$("last-vote").innerHTML=
-  `${d.name}さんの予想：<br>${num} ${d.playerName}<br>（${time}）`;
-$("last-vote").classList.remove("hidden");
+  let d=JSON.parse(localStorage.getItem("voteData"));
+  if(!d)return;
+  let p=players.find(x=>x.n===d.number),
+      cls=p?.c||"",
+      col=(cls==="btn-white"||cls==="btn-yellow")?"black":"white";
+  let num=`<span class="${cls}" style="color:${col};padding:4px 12px;border-radius:6px;display:inline-block">${d.number}</span>`;
+  let time="投票時刻　"+new Date(d.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
+  $("last-vote").innerHTML=`${d.name}さんの予想：<br>${num} ${d.playerName}<br>（${time}）`;
+  $("last-vote").classList.remove("hidden")
 }
 function showCountdown(){
-const el=$("countdown");
-const update=()=>{
-let now=new Date();
-let diff=Math.max(0,Math.floor((VOTE_END-now)/1000));
-let m=String(Math.floor(diff/60)).padStart(2,'0');
-let s=String(diff%60).padStart(2,'0');
-el.textContent=`締切まで ${m}分${s}秒`;
-};
-update();
-let timer=setInterval(()=>{
-update();
-if(new Date()>VOTE_END)clearInterval(timer);
-},1000);
+  const el=$("countdown");
+  const update=()=>{
+    let now=new Date();
+    let diff=Math.max(0,Math.floor((VOTE_END-now)/1000));
+    let m=String(Math.floor(diff/60)).padStart(2,'0');
+    let s=String(diff%60).padStart(2,'0');
+    el.textContent=`締切まで ${m}分${s}秒`
+  };
+  update();
+  let timer=setInterval(()=>{
+    update();
+    if(new Date()>VOTE_END)clearInterval(timer)
+  },1000)
 }
 window.onload=()=>{
-let now=new Date,ended=now>VOTE_END;
-const timeStr=VOTE_END.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",hour12:false});
-$("deadline-text").textContent="※投票締切時刻　"+timeStr;
-$("vote-warning").textContent="※投票締切は "+timeStr+" です。お早めに！";
-if(ended){
-$("name-label").innerHTML="投票は終了しました！<br>ご投票ありがとうございます♪";
-$("username").style.display="none";
-$("vote-btn").style.display="none"
-}
-showLastVote();
-let delay=VOTE_END - new Date();
-if(delay>0){
-setTimeout(()=>location.reload(),delay);
-}
+  let now=new Date(),ended=now>VOTE_END;
+  const timeStr=VOTE_END.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",hour12:false});
+  $("deadline-text").textContent="※投票締切時刻 " + timeStr;
+  if(ended){
+    $("name-label").innerHTML="投票は終了しました！<br>ご投票ありがとうございます♪";
+    $("username").style.display="none";
+    $("vote-btn").style.display="none"
+  }
+  showLastVote();
+  let delay=VOTE_END-new Date();
+  if(delay>0){
+    setTimeout(()=>location.reload(),delay)
+  }
 }
 </script></body></html>
