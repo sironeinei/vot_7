@@ -35,7 +35,7 @@
 
     #last-vote { margin-top: 10px; font-size: 14px; color: #333; line-height: 1.4; }
     #uuid-display { margin-top: 5px; font-size: 6px; color: #666; }
-    #qr-canvas { margin-top: 5px; width: 120px !important; height: 120px !important; }
+    #qr-canvas { margin-top: 10px; width: 200px !important; height: 200px !important; }
 
     .big-number-container {
       width: 80px;
@@ -191,7 +191,7 @@ function showLastVote() {
   const qrText = `${uuid}-${safeName}-${d.number}-${compactTime}`;
   QRCode.toCanvas($("qr-canvas"), qrText, {
     errorCorrectionLevel: 'L',
-    width: 120
+    width: 200
   }, function (err) {
     if (err) console.error(err);
   });
