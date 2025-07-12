@@ -102,6 +102,14 @@ function localStorageAvailable() {
   }
 }
 
+function generateUUIDv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 let uuid = "";
 let storageOK = localStorageAvailable();
 
@@ -112,7 +120,7 @@ if (!storageOK) {
 } else {
   uuid = localStorage.getItem("uuid");
   if (!uuid) {
-    uuid = Math.random().toString(36).substring(2, 10);
+    uuid = generateUUIDv4();
     localStorage.setItem("uuid", uuid);
   }
   $("uuid-display").textContent = "投票ID: " + uuid;
