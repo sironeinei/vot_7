@@ -45,20 +45,32 @@
 <div id="raceContainer"></div>
 
 <script>
-  // ▼ 11レース分の締切時刻（日本時間）
-  const raceData = [
-    { raceNumber: 1, deadline: new Date('2025-08-12T15:11:00') },
-    { raceNumber: 2, deadline: new Date('2025-08-12T15:39:00') },
-    { raceNumber: 3, deadline: new Date('2025-08-12T16:08:00') },
-    { raceNumber: 4, deadline: new Date('2025-08-12T16:38:00') },
-    { raceNumber: 5, deadline: new Date('2025-08-12T17:09:00') },
-    { raceNumber: 6, deadline: new Date('2025-08-12T17:40:00') },
-    { raceNumber: 7, deadline: new Date('2025-08-12T18:12:00') },
-    { raceNumber: 8, deadline: new Date('2025-08-12T18:44:00') },
-    { raceNumber: 9, deadline: new Date('2025-08-12T19:16:00') },
-    { raceNumber: 10, deadline: new Date('2025-08-12T19:48:00') },
-    { raceNumber: 11, deadline: new Date('2025-08-12T20:26:00') },
+  // ▼ 当日の時刻だけを指定
+  const raceTimes = [
+    { raceNumber: 1, hour: 15, minute: 11 },
+    { raceNumber: 2, hour: 15, minute: 39 },
+    { raceNumber: 3, hour: 16, minute: 8 },
+    { raceNumber: 4, hour: 16, minute: 38 },
+    { raceNumber: 5, hour: 17, minute: 9 },
+    { raceNumber: 6, hour: 17, minute: 40 },
+    { raceNumber: 7, hour: 18, minute: 12 },
+    { raceNumber: 8, hour: 18, minute: 44 },
+    { raceNumber: 9, hour: 19, minute: 16 },
+    { raceNumber: 10, hour: 19, minute: 48 },
+    { raceNumber: 11, hour: 20, minute: 26 },
   ];
+
+  // ▼ 今日の日付を取得
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0始まり
+  const date = today.getDate();
+
+  // ▼ 締切日時データを生成
+  const raceData = raceTimes.map(race => ({
+    raceNumber: race.raceNumber,
+    deadline: new Date(year, month, date, race.hour, race.minute)
+  }));
 
   const container = document.getElementById('raceContainer');
 
