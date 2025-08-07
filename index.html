@@ -2,241 +2,93 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>１着当てクイズ</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>函館競輪 未確定車券 対象レース</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 10px; margin: 0; }
-    .hidden { display: none; }
-    button {
-      margin: 8px auto;
-      padding: 12px;
-      font-size: 18px;
-      width: 90%;
-      border: none;
-      font-weight: bold;
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .race-box {
+      background: #fff;
       border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 15px;
+      margin: 10px 0;
     }
-    input {
+    .race-number {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .race-deadline {
       font-size: 16px;
-      padding: 8px;
-      width: 90%;
-    }
-    h2 { margin-top: 20px; font-size: 20px; }
-
-    .btn-white { background: #fff; color: #000; border: 2px solid #000; }
-    .btn-black { background: #000; color: #fff; }
-    .btn-red { background: #f00; color: #fff; }
-    .btn-blue { background: #00f; color: #fff; }
-    .btn-yellow { background: #ff0; color: #000; }
-    .btn-green { background: #0a0; color: #fff; }
-    .btn-orange { background: #ffa500; color: #000; }
-    .btn-black-text { color: #000 !important; }
-
-    #last-vote { margin-top: 10px; font-size: 14px; color: #333; line-height: 1.4; }
-    #uuid-display { margin-top: 5px; font-size: 6px; color: #666; }
-    #qr-canvas { margin-top: 10px; width: 200px !important; height: 200px !important; }
-
-    .big-number-container {
-      width: 80px;
-      height: 80px;
-      margin: 10px auto 5px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 60px;
-      line-height: 1;
-    }
-
-    #countdown {
-      font-size: 14px;
-      font-weight: bold;
       color: #333;
-      margin-bottom: 10px;
+      margin-top: 5px;
+    }
+    .race-finished {
+      font-size: 16px;
+      color: #999;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
 
-<div id="screen-name">
-  <h2 id="name-label">ニックネームを入力</h2>
-  <input id="username" placeholder="ニックネームを入力" required>
-  <p id="deadline-text" style="margin: 5px 0; font-size: 14px; color: #444"></p>
-  <button id="vote-btn" class="btn-black-text" onclick="handleName()">投票に進む</button>
-  <div id="last-vote" class="hidden"></div>
-  <canvas id="qr-canvas"></canvas>
-  <div id="uuid-display"></div>
-</div>
-
-<div id="screen-vote" class="hidden">
-  <h2>１着は誰でしょう</h2>
-  <p id="countdown"></p>
-  <div id="vote-buttons"></div>
-</div>
+<h1>函館競輪 対象レース一覧</h1>
+<div id="raceContainer"></div>
 
 <script>
-const VOTE_END = new Date("2025-07-22T19:50:00");
+  // ▼ 11レース分の締切時刻（日本時間）
+  const raceData = [
+    { raceNumber: 1, deadline: new Date('2025-08-12T15:11:00') },
+    { raceNumber: 2, deadline: new Date('2025-08-12T15:39:00') },
+    { raceNumber: 3, deadline: new Date('2025-08-12T16:08:00') },
+    { raceNumber: 4, deadline: new Date('2025-08-12T16:38:00') },
+    { raceNumber: 5, deadline: new Date('2025-08-12T17:09:00') },
+    { raceNumber: 6, deadline: new Date('2025-08-12T17:40:00') },
+    { raceNumber: 7, deadline: new Date('2025-08-12T18:12:00') },
+    { raceNumber: 8, deadline: new Date('2025-08-12T18:44:00') },
+    { raceNumber: 9, deadline: new Date('2025-08-12T19:16:00') },
+    { raceNumber: 10, deadline: new Date('2025-08-12T19:48:00') },
+    { raceNumber: 11, deadline: new Date('2025-08-12T20:26:00') },
+  ];
 
-const players = [
-  { n: 1, t: "佐藤(さとう) 選手", c: "btn-white" },
-  { n: 2, t: "鈴木(すずき) 選手", c: "btn-black" },
-  { n: 3, t: "高橋(たかはし) 選手", c: "btn-red" },
-  { n: 4, t: "田中(たなか) 選手", c: "btn-blue" },
-  { n: 5, t: "伊藤(いとう) 選手", c: "btn-yellow" },
-  { n: 6, t: "山本(やまもと) 選手", c: "btn-green" },
-  { n: 7, t: "斎藤(さいとう) 選手", c: "btn-orange" }
-];
+  const container = document.getElementById('raceContainer');
 
-function $(id) { return document.getElementById(id); }
-
-function localStorageAvailable() {
-  try {
-    const test = "__storage_test__";
-    localStorage.setItem(test, test);
-    localStorage.removeItem(test);
-    return true;
-  } catch (e) {
-    return false;
+  function formatTime(date) {
+    return `${date.getHours().toString().padStart(2, '0')}時${date.getMinutes().toString().padStart(2, '0')}分`;
   }
-}
 
-function generateUUIDv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+  function updateRaceDisplay() {
+    const now = new Date();
+    container.innerHTML = '';
 
-let uuid = "";
-let storageOK = localStorageAvailable();
+    raceData.forEach(race => {
+      const isFinished = now >= race.deadline;
+      const raceBox = document.createElement('div');
+      raceBox.className = 'race-box';
 
-if (!storageOK) {
-  $("name-label").innerHTML = "投票データが保存できません<br>（プライベートモード等が原因の可能性があります）。<br>通常モードでご利用ください。";
-  $("username").style.display = "none";
-  $("vote-btn").style.display = "none";
-} else {
-  uuid = localStorage.getItem("uuid");
-  if (!uuid) {
-    uuid = generateUUIDv4();
-    localStorage.setItem("uuid", uuid);
+      raceBox.innerHTML = `
+        <div class="race-number">${race.raceNumber}R</div>
+        <div class="${isFinished ? 'race-finished' : 'race-deadline'}">
+          ${isFinished ? '受付終了' : '締切予定時刻：' + formatTime(race.deadline)}
+        </div>
+      `;
+
+      container.appendChild(raceBox);
+    });
   }
-  $("uuid-display").textContent = "投票ID: " + uuid;
-}
 
-function handleName() {
-  const name = $("username").value.trim();
-  if (!name) return alert("名前を入力してください");
-  if (new Date() > VOTE_END) return;
-  localStorage.setItem("username", name);
-  showVoteScreen(name);
-}
-
-function showVoteScreen(name) {
-  $("screen-name").classList.add("hidden");
-  $("screen-vote").classList.remove("hidden");
-  let c = $("vote-buttons");
-  c.innerHTML = "";
-  players.forEach(p => {
-    let b = document.createElement("button");
-    b.textContent = p.n + "：" + p.t;
-    b.className = p.c;
-    b.onclick = () => {
-      if (new Date() > VOTE_END) { returnToNameScreen(true); return; }
-      const voteTime = new Date().toISOString();
-      const voteData = { name: name, number: p.n, time: voteTime };
-      localStorage.setItem("voteData", JSON.stringify(voteData));
-      returnToNameScreen();
-    };
-    c.appendChild(b);
-  });
-  showCountdown();
-}
-
-function returnToNameScreen(ended) {
-  $("screen-vote").classList.add("hidden");
-  $("screen-name").classList.remove("hidden");
-  $("username").value = "";
-  if (ended) {
-    $("name-label").innerHTML = "投票は終了しました！<br>ご投票ありがとうございます♪";
-    $("username").style.display = "none";
-    $("vote-btn").style.display = "none";
-  }
-  showLastVote();
-}
-
-function formatCompactTime(iso) {
-  const d = new Date(iso);
-  const yy = String(d.getFullYear()).slice(2);
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${yy}${mm}${dd}${hh}${mi}`;
-}
-
-function sanitizeName(name) {
-  return name.replace(/[^a-zA-Z0-9\u3040-\u30FF\u4E00-\u9FFF]/g, '');
-}
-
-function showLastVote() {
-  const d = JSON.parse(localStorage.getItem("voteData"));
-  if (!d) return;
-  const p = players.find(x => x.n === d.number);
-  const cls = p?.c || "";
-  const col = (cls === "btn-white" || cls === "btn-yellow") ? "black" : "white";
-
-  const num = `<div class="big-number-container ${cls}" style="color:${col}">${d.number}</div>`;
-  const time = "投票時刻 " + new Date(d.time).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
-
-  $("last-vote").innerHTML = `${d.name}さんの予想：<br>${num}${p?.t || ""}<br>${time}`;
-  $("last-vote").classList.remove("hidden");
-
-  const compactTime = formatCompactTime(d.time);
-  const safeName = sanitizeName(d.name);
-  const qrText = `${uuid}-${safeName}-${d.number}-${compactTime}`;
-  QRCode.toCanvas($("qr-canvas"), qrText, {
-    errorCorrectionLevel: 'L',
-    width: 200
-  }, function (err) {
-    if (err) console.error(err);
-  });
-}
-
-function showCountdown() {
-  const el = $("countdown");
-  const update = () => {
-    let now = new Date();
-    let diff = Math.max(0, Math.floor((VOTE_END - now) / 1000));
-    let m = String(Math.floor(diff / 60)).padStart(2, '0');
-    let s = String(diff % 60).padStart(2, '0');
-    el.textContent = `締切まで ${m}分${s}秒`;
-  };
-  update();
-  let timer = setInterval(() => {
-    update();
-    if (new Date() > VOTE_END) clearInterval(timer);
-  }, 1000);
-}
-
-window.onload = () => {
-  if (!storageOK) return;
-  let now = new Date(), ended = now > VOTE_END;
-  const timeStr = VOTE_END.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false });
-  $("deadline-text").textContent = "※投票締切時刻 " + timeStr;
-  if (ended) {
-    $("name-label").innerHTML = "投票は終了しました！<br>ご投票ありがとうございます♪";
-    $("username").style.display = "none";
-    $("vote-btn").style.display = "none";
-  }
-  showLastVote();
-  let delay = VOTE_END - new Date();
-  if (delay > 0) {
-    setTimeout(() => location.reload(), delay);
-  }
-};
+  updateRaceDisplay();
+  setInterval(updateRaceDisplay, 1000);
 </script>
+
 </body>
 </html>
