@@ -41,41 +41,51 @@
 </head>
 <body>
 
-<h1>函館競輪 対象レース一覧</h1>
+<h1>函館競輪 未確定レース一覧</h1>
 <div id="raceContainer"></div>
 
 <script>
-  // ▼ 当日の時刻だけを指定
-  const raceTimes = [
-    { raceNumber: 1, hour: 15, minute: 11 },
-    { raceNumber: 2, hour: 15, minute: 39 },
-    { raceNumber: 3, hour: 16, minute: 8 },
-    { raceNumber: 4, hour: 16, minute: 38 },
-    { raceNumber: 5, hour: 17, minute: 9 },
-    { raceNumber: 6, hour: 17, minute: 40 },
-    { raceNumber: 7, hour: 18, minute: 12 },
-    { raceNumber: 8, hour: 18, minute: 44 },
-    { raceNumber: 9, hour: 19, minute: 16 },
-    { raceNumber: 10, hour: 19, minute: 48 },
-    { raceNumber: 11, hour: 20, minute: 26 },
-  ];
-
-  // ▼ 今日の日付を取得
+  // 今日の日付を取得
   const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth(); // 0始まり
-  const date = today.getDate();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
 
-  // ▼ 締切日時データを生成
-  const raceData = raceTimes.map(race => ({
-    raceNumber: race.raceNumber,
-    deadline: new Date(year, month, date, race.hour, race.minute)
+  // 各レースの締切時刻（時間のみ指定）
+  const raceData = [
+    { raceNumber: 1, time: "15:20" },
+    { raceNumber: 2, time: "15:48" },
+    { raceNumber: 3, time: "16:17" },
+    { raceNumber: 4, time: "16:47" },
+    { raceNumber: 5, time: "17:18" },
+    { raceNumber: 6, time: "17:49" },
+    { raceNumber: 7, time: "18:21" },
+    { raceNumber: 8, time: "18:53" },
+    { raceNumber: 9, time: "19:25" },
+    { raceNumber: 10, time: "19:57" },
+    { raceNumber: 11, time: "20:35" },
+  ].map(r => ({
+    raceNumber: r.raceNumber,
+    deadline: new Date(`${dateStr}T${r.time}:00+09:00`) // 日本時間固定
   }));
 
   const container = document.getElementById('raceContainer');
 
-  function formatTime(date) {
-    return `${date.getHours().toString().padStart(2, '0')}時${date.getMinutes().toString().padStart(2, '0')}分`;
+  function formatReadableCountdown(ms) {
+    if (ms <= 0) return null;
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) return `${hours}時間${minutes}分`;
+    else if (minutes > 0) return `${minutes}分${seconds.toString().padStart(2, '0')}秒`;
+    else return `${seconds}秒`;
+  }
+
+  function formatDeadlineTime(date) {
+    return `${date.getHours()}時${date.getMinutes().toString().padStart(2, '0')}分`;
   }
 
   function updateRaceDisplay() {
@@ -83,14 +93,18 @@
     container.innerHTML = '';
 
     raceData.forEach(race => {
-      const isFinished = now >= race.deadline;
+      const remainingMs = race.deadline - now;
+      const isFinished = remainingMs <= 0;
+
       const raceBox = document.createElement('div');
       raceBox.className = 'race-box';
 
       raceBox.innerHTML = `
         <div class="race-number">${race.raceNumber}R</div>
         <div class="${isFinished ? 'race-finished' : 'race-deadline'}">
-          ${isFinished ? '受付終了' : '締切予定時刻：' + formatTime(race.deadline)}
+          ${isFinished
+            ? '受付終了'
+            : `受付締切まで：${formatReadableCountdown(remainingMs)}（${formatDeadlineTime(race.deadline)}）`}
         </div>
       `;
 
