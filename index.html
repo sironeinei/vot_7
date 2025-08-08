@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>函館競輪 未確定車券 対象レース</title>
+  <title>函館競輪 未確定車券 対象レAース</title>
   <style>
     body {
       font-family: sans-serif;
@@ -44,30 +44,75 @@
 <h1>函館競輪 未確定レース一覧</h1>
 <div id="raceContainer"></div>
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>函館競輪 未確定車券 対象レース</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .race-box {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 15px;
+      margin: 10px 0;
+    }
+    .race-deadline {
+      font-size: 16px;
+      color: #333;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+    .race-finished {
+      font-size: 16px;
+      color: #999;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+    .race-number-bold {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>函館競輪 対象レース一覧</h1>
+<div id="raceContainer"></div>
+
 <script>
-  // 今日の日付を取得
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const dd = String(today.getDate()).padStart(2, '0');
   const dateStr = `${yyyy}-${mm}-${dd}`;
 
-  // 各レースの締切時刻（時間のみ指定）
   const raceData = [
-    { raceNumber: 1, time: "15:20" },
-    { raceNumber: 2, time: "15:48" },
-    { raceNumber: 3, time: "16:17" },
-    { raceNumber: 4, time: "16:47" },
-    { raceNumber: 5, time: "17:18" },
-    { raceNumber: 6, time: "17:49" },
-    { raceNumber: 7, time: "18:21" },
-    { raceNumber: 8, time: "18:53" },
-    { raceNumber: 9, time: "19:25" },
-    { raceNumber: 10, time: "19:57" },
-    { raceNumber: 11, time: "20:35" },
+    { raceNumber: 1, time: "15:11" },
+    { raceNumber: 2, time: "15:39" },
+    { raceNumber: 3, time: "16:08" },
+    { raceNumber: 4, time: "16:38" },
+    { raceNumber: 5, time: "17:09" },
+    { raceNumber: 6, time: "17:40" },
+    { raceNumber: 7, time: "18:12" },
+    { raceNumber: 8, time: "18:44" },
+    { raceNumber: 9, time: "19:16" },
+    { raceNumber: 10, time: "19:48" },
+    { raceNumber: 11, time: "20:26" },
   ].map(r => ({
     raceNumber: r.raceNumber,
-    deadline: new Date(`${dateStr}T${r.time}:00+09:00`) // 日本時間固定
+    deadline: new Date(`${dateStr}T${r.time}:00+09:00`)
   }));
 
   const container = document.getElementById('raceContainer');
@@ -99,12 +144,14 @@
       const raceBox = document.createElement('div');
       raceBox.className = 'race-box';
 
+      const line1 = `<span class="race-number-bold">${race.raceNumber}R</span>　${isFinished ? '受付終了' : '受付終了まで'}`;
+      const line2 = isFinished
+        ? `（${formatDeadlineTime(race.deadline)}）`
+        : `${formatReadableCountdown(remainingMs)}（${formatDeadlineTime(race.deadline)}）`;
+
       raceBox.innerHTML = `
-        <div class="race-number">${race.raceNumber}R</div>
         <div class="${isFinished ? 'race-finished' : 'race-deadline'}">
-          ${isFinished
-            ? '受付終了'
-            : `受付締切まで：${formatReadableCountdown(remainingMs)}（${formatDeadlineTime(race.deadline)}）`}
+          ${line1}<br>${line2}
         </div>
       `;
 
@@ -115,6 +162,11 @@
   updateRaceDisplay();
   setInterval(updateRaceDisplay, 1000);
 </script>
+
+</body>
+</html>
+
+
 
 </body>
 </html>
