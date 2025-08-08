@@ -29,12 +29,6 @@
       margin-top: 5px;
       line-height: 1.4;
     }
-    .race-finished {
-      font-size: 16px;
-      color: #999;
-      margin-top: 5px;
-      line-height: 1.4;
-    }
     .race-number-bold {
       font-weight: bold;
     }
@@ -95,16 +89,17 @@
       const remainingMs = race.deadline - now;
       const isFinished = remainingMs <= 0;
 
+      // 受付終了レースは表示しない
+      if (isFinished) return;
+
       const raceBox = document.createElement('div');
       raceBox.className = 'race-box';
 
-      const line1 = `<span class="race-number-bold">${race.raceNumber}R</span>　${isFinished ? '受付終了' : '受付終了まで'}`;
-      const line2 = isFinished
-        ? `（${formatDeadlineTime(race.deadline)}）`
-        : `${formatReadableCountdown(remainingMs)}（${formatDeadlineTime(race.deadline)}）`;
+      const line1 = `<span class="race-number-bold">${race.raceNumber}R</span>　受付終了まで`;
+      const line2 = `${formatReadableCountdown(remainingMs)}（${formatDeadlineTime(race.deadline)}）`;
 
       raceBox.innerHTML = `
-        <div class="${isFinished ? 'race-finished' : 'race-deadline'}">
+        <div class="race-deadline">
           ${line1}<br>${line2}
         </div>
       `;
