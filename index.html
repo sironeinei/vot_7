@@ -11,7 +11,6 @@
     button { margin: 8px auto; padding: 12px; font-size: 18px; width: 90%; border: none; font-weight: bold; border-radius: 8px; }
     input { font-size: 16px; padding: 8px; width: 90%; }
     h2 { margin-top: 20px; font-size: 20px; }
-    /* 設定側のクラス(btn-1~9)に対応する競輪カラー */
     .btn-1 { background-color: #ffffff; color: #000; border: 2px solid #333 !important; }
     .btn-2 { background-color: #000000; color: #fff; }
     .btn-3 { background-color: #e74c3c; color: #fff; }
@@ -27,7 +26,7 @@
     #qr-wrapper { position: relative; width: 200px; height: 200px; margin: 10px auto; }
     #qr-canvas { width: 100% !important; height: 100% !important; }
     #qr-expired-overlay { width: 100%; height: 100%; border: 4px solid #c0392b; border-radius: 8px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; color: #c0392b; font-size: 24px; font-weight: bold; box-sizing: border-box; line-height: 1.4; }
-    .big-number-container { width: 80px; height: 80px; margin: 10px auto 5px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 60px; line-height: 1; }
+    .big-number-container { width: 80px; height: 80px; margin: 10px auto 5px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 60px; line-height: 1; border: 1px solid #ccc; }
     #countdown { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 10px; }
     #exchange-msg { margin-top: 15px; font-size: 16px; font-weight: bold; }
     .msg-active { color: #d35400; }
@@ -55,8 +54,8 @@
 </div>
 
 <script>
-const VOTE_END = new Date("2026-07-24T17:20");
-const EXCHANGE_END = new Date("2026-07-24T17:30");
+const VOTE_END = new Date("2026-07-24T19:10");
+const EXCHANGE_END = new Date("2026-07-24T19:15");
 const players = [{"n":1,"t":"中井俊(なかい)","c":"btn-1"},{"n":2,"t":"吉田(よしだ)","c":"btn-2"},{"n":3,"t":"栗山(くりやま)","c":"btn-3"},{"n":4,"t":"佐藤(さとう)","c":"btn-4"},{"n":5,"t":"元砂勇(もとすな)","c":"btn-5"},{"n":6,"t":"伊狩(いかり)","c":"btn-6"},{"n":7,"t":"大井(おおい)","c":"btn-7"}];
 
 function $(id) { return document.getElementById(id); }
